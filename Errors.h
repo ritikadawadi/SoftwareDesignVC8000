@@ -24,5 +24,12 @@ public:
 private:
 
     static vector<string> m_ErrorMsgs;  // This must be declared in the .cpp file.  Why?
+    
 };
 #endif
+
+/*
+Static member functions can be called using class name without creating an object of that class. 
+So, it allows the error messages to be recorded and accessed without needing an instance of the 'Errors' class.
+
+*/

@@ -14,7 +14,6 @@ int main( int argc, char *argv[] )
     // Establish the location of the labels:
     assem.PassI( );
 
-    
     // Display the symbol table.
     assem.DisplaySymbolTable();
 

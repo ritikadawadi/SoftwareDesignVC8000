@@ -23,7 +23,7 @@ DESCRIPTION:
 
 
 */
-// parse an instruction and return its type.  Yes, I want a call by value.  Why??
+// parse an instruction and return its type. 
 Instruction::InstructionType Instruction::ParseInstruction(string a_line)
 {
     // Record the original statement.  This will be needed in the sceond pass.
@@ -45,6 +45,35 @@ Instruction::InstructionType Instruction::ParseInstruction(string a_line)
 }
 
 /*
+  NAME:
+      DeleteComment() - deletes comments, void function.
+
+  SYNOPSIS:
+      void DeleteComment(string &a_line);
+      &a_line        --> a line from the input file is passed by reference,
+                          and the fucntion checks if it is a comment
+
+  DESCRIPTION:
+      If the function finds ';' synbol, it deletes the line because,
+      all comments begin with a ';' symbols. In this function size_t is a
+      data type that returns the position of the first occurance of character
+      in find(). npos represents the largest possible size of any object.
+      So, if the semicolon is found, it will be in a certain position,
+      so it will not be equal to 'npos' in which case, the case inside
+      the if block will be executed.
+
+  */
+  // Delete any comments from the statement.
+void Instruction::DeleteComment(string& a_line)
+{
+    size_t isemi1 = a_line.find(';');
+    if (isemi1 != string::npos)
+    {
+        a_line.erase(isemi1);
+    }
+}
+
+/*
 NAME: 
 
     RecordFields();
@@ -52,16 +81,48 @@ NAME:
 SYNOPSIS:
 
     bool RecordFields( const string &a_line );
-    &a_line     --> a_line is pass by reference here, as it modifies the 
+    &a_line     --> a_line is pass by const reference here, as it modifies the 
                     line according to its content type.
+    returns true if the function successfully records the fields, and false if there is a format error
+
+MACHINE LAN OPCODES:
+
+    ADD: Adds two operands together.
+    SUB: Subtracts the second operand from the first.
+    MULT: Multiplies two operands.
+    DIV: Divides the first operand by the second.
+    LOAD: Loads a value from memory into a register.
+    STORE: Stores a value from a register into memory.
+    ADDR: Adds the contents of two registers and stores the result in another register.
+    SUBR: Subtracts the contents of two registers and stores the result in another register.
+    MULTR: Multiplies the contents of two registers and stores the result in another register.
+    DIVR: Divides the contents of two registers and stores the result in another register.
+    READ: Reads data from an input device into memory.
+    WRITE: Writes data from memory to an output device.
+    B: Branches to a specified address unconditionally.
+    BM: Branches to a specified address if the last result was negative.
+    BZ: Branches to a specified address if the last result was zero.
+    BP: Branches to a specified address if the last result was positive.
+    HALT: Halts the program execution.
+
+ASSEMBLER OPCODES:
+
+    DC: Define constant
+    DS: Define storage 
+    ORG: Define origin
+    END: End
 
 DESCRIPTION:
-        
-        This function calls several other functions of the Instruction class.
-        
-        The function calls isStrNumber on operand 1 and operand 2, and if it 
+
+        This function calls several other functions of the Instruction class. Initially, it calls the 
+        ParseLineIntoFields function. The function assigns the a_line into it's respective elements. 
+        Subsequently, it checks for any comments and operands in the a_line string. 
+        The function calls isStrNumber on operand 1 and operand 2, and if it
         returns true it uses stoi() function from standard library. stoi() converts a
-        string represting an integer to an integer type.
+        string represting an integer to an integer type. All the character of the function are converted
+        to uppercase. Two arrays of machine language opcode and assembler instruction is initialized.
+        The fucntion checks if m_OpCode is any of the above by comparing it with the elements of the arrays.
+        it assigns m_type into the respective type from the enum class. 
 
 
 */
@@ -86,27 +147,72 @@ bool Instruction::RecordFields( const string &a_line )
     {
         c = toupper(c);
     }
-    // I leave to the class the tasks:
+  
     // - Determine and record the instruction type from the op code.
     // - Recording the numberic Op code for machine lanuage equivalents.
-    return isFormatError;
+
+    string Machine_OpCodes[] = { "ADD", "SUB", "MULT", "LOAD", "STORE", "ADDR", "SUBR", "MULTR", "DIVR"
+                                "READ", "WRITE", "B", "BM", "BZ", "BP", "HALT" };
+    string Assembler_OpCode[] = { "DC", "DS", "ORG", "END" };
+
+    int size_M = sizeof(Machine_OpCodes) / sizeof(Machine_OpCodes[0]);
+    int size_A = sizeof(Assembler_OpCode) / sizeof(Assembler_OpCode[0]);
+
+    // to determine if machine code
+    for (int i = 0; i < size_M; i++) {
+        if (m_OpCode == Machine_OpCodes[i]) {
+            m_type = InstructionType::ST_MachineLanguage;
+            m_NumOpCode = i + 1;
+            return true;
+        }
+    }
+
+    // to determine if assembly instruction
+    for (int i = 0; i < size_A; i++) {
+        if (i < size_A - 1) {
+            if (m_OpCode == Assembler_OpCode[i]) {
+                m_type = InstructionType::ST_AssemblerInstr;
+                return true;
+            }
+        }
+        if (m_OpCode == Assembler_OpCode[size_A - 1]) {
+            m_type = InstructionType::ST_End;
+            return true;
+        }
+    }
+
+    // to determine if comment
+    if (m_Label.empty() && m_OpCode.empty()) {
+        m_type = InstructionType::ST_Comment;
+        return true;
+    }
+
+    // is a error if it is none of above
+    m_type = InstructionType::ST_Error;
+    return true;
 }
 
 /*
 NAME: 
-    ParseLineIntoFields();
+    ParseLineIntoFields(); - parses the instruction to its respective fields
 
 SYNOPSIS:
     bool ParseLineIntoFields(string a_line, string& a_label, string& a_OpCode,
     string& a_Operand1, string& a_Operand2)
-    a_line          -->
-    &a_label        -->
-    &a_OpCode       -->
-    &a_Operand1     -->
-    &a_Operand2     -->
+    a_line          --> represents a single line of assembly line instruction, is passed by value
+    &a_label        --> records the label in the instruction
+    &a_OpCode       --> records the operation code in the instruction
+    &a_Operand1     --> records the operand1 in the instruction
+    &a_Operand2     --> records the operand2 in the instruction
 
 DESCRIPTION:
-    
+    This boolean function is reposnsible for splitting an instruction line into label, operation code,
+    and operands. All the elements are initialized to empty strings. If the assembly language line ie 
+    a_line is empty, it returns false which indicates that there is nothing to parse. Else, it will replace
+    all the commas ',' in the line with a blank space. An istringstream object is initialized with a_line, which
+    allows to treat a_line as a stream. If the first character of the input line is a space or a tab, it implies 
+    the absence of a label. So, it reads operation code, operand1 and operand2 into the respective variables. Else,
+    it reads label along with the afforementioned variables. If there is still extra data, it returns true. 
 
 */
 
@@ -175,4 +281,29 @@ bool Instruction::isStrNumber(const string& a_str)
         if (!isdigit(a_str[ichar])) return false;
     }
     return true;
+}
+
+
+/*
+NAME:
+    LocationNextInstruction() - Determines the next location
+
+SYNOPSIS:
+    int LocationNextInstruction(int a_loc);
+        a_loc       ---> Represents the current location in the program's memory
+    returns the location of the next instruction
+
+DESCRIPTION:
+    The function determines the location of the next location based on the current location's
+    operation code and its operands. If the current location is either DS or ORG, it will add that to 
+    location, else it will increment location by 1. 
+*/
+
+int Instruction::LocationNextInstruction(int a_loc) {
+        
+    if (m_OpCode == "DS" || m_OpCode == "ORG")
+    {
+        return a_loc + m_Operand1NumericValue;
+    }
+    return a_loc + 1;
 }

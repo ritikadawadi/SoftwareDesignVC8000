@@ -34,5 +34,9 @@ private:
     SymbolTable m_symtab;   // Symbol table object
     Instruction m_inst;	    // Instruction object
     emulator m_emul;        // Emulator object
+
+    void AssemblyInstruction(string& content, int& loc);
+    void MachineInstruction(string& content, int& loc);
+
 };
 

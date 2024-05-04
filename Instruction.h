@@ -28,11 +28,7 @@ public:
     //}
 
     // Compute the location of the next instruction.
-    int LocationNextInstruction( int a_loc ) 
-    {
-        cout << "Must implement: LocationNextInstruction( )" << endl;
-        return a_loc + 1;
-    }
+    int LocationNextInstruction(int a_loc);
 
     // To access the label
     inline string &GetLabel( ) {
@@ -69,8 +65,6 @@ public:
     }
 
 
-
-
 private:
 
 
@@ -93,34 +87,7 @@ private:
     bool m_IsNumericOperand2 = false;// == true if the operand 2 is numeric.
     int m_Operand2NumericValue = 0;   // The value of the operand 2 if it is numeric.
 
-    /*
-    NAME:
-        DeleteComment() - deletes comments, void function.
-
-    SYNOPSIS:
-        void DeleteComment(string &a_line);
-        &a_line        --> a line from the input file is passed by reference,
-                            and the fucntion checks if it is a comment
-
-    DESCRIPTION:
-        If the function finds ';' synbol, it deletes the line because,
-        all comments begin with a ';' symbols. In this function size_t is a 
-        data type that returns the position of the first occurance of character
-        in find(). npos represents the largest possible size of any object.
-        So, if the semicolon is found, it will be in a certain position,
-        so it will not be equal to 'npos' in which case, the case inside 
-        the if block will be executed.
-        
-    */
-    // Delete any comments from the statement.
-    void DeleteComment(string &a_line)
-    {
-        size_t isemi1 = a_line.find(';');
-        if (isemi1 != string::npos)
-        {
-            a_line.erase(isemi1);
-        }
-    }
+    void DeleteComment(string& a_line);
 
     // Record the fields of the instructions.
     bool RecordFields( const string &a_line );
