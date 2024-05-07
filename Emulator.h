@@ -9,19 +9,22 @@ class emulator {
 public:
 
     const static int MEMSZ = 1'000'000;	// The size of the memory of the VC8000.
-    emulator() {
 
-         m_memory.resize(MEMSZ, 0);
-    }
+    emulator();
+
     // Records instructions and data into simulated memory.
-    bool insertMemory( int a_location, long long a_contents ) { cout << "Must implement: insertMemory( )" << endl; }
-    
+    bool insertMemory(int a_location, long long a_contents);
+
     // Runs the program recorded in memory.
-    bool runProgram( ) { cout << "Must implement: runProgram( )" << endl; }
+    bool runProgram();
+
+    function<int()> inputReader;
 
 private:
-
+    
     vector<long long> m_memory;  	// Memory for the VC8000
+    long long m_reg[10] = { 0 };    // Registers for the VC8000
+
 };
 
 #endif

@@ -27,7 +27,7 @@ SymbolTable::AddSymbol( const string &a_symbol, int a_loc )
     map<string, int>::iterator st = m_symbolTable.find( a_symbol );
     if( st != m_symbolTable.end() ) {
 
-        st->second = multiplyDefinedSymbol;
+        st->second = multipleDefinedSymbol;
         return;
     }
     // Record a the  location in the symbol table.

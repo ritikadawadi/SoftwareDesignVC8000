@@ -14,7 +14,8 @@ public:
     SymbolTable( ) {};
     ~SymbolTable( ) {};
     
-    const int multiplyDefinedSymbol = -999;
+    // Indicates that a symbol is defined in multiple locations within the symbol table
+    const int multipleDefinedSymbol = -999;
 
     // Add a new symbol to the symbol table.
     void AddSymbol( const string &a_symbol, int a_loc );

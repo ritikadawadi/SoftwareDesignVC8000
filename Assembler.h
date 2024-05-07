@@ -20,11 +20,17 @@ public:
     void PassI( );
 
     // Pass II - generate a translation
-    void PassII( ) { cout << "Must implement: PassII( )" << endl; }
+    void PassII();
 
     // Display the symbols in the symbol table.
     void DisplaySymbolTable() { m_symtab.DisplaySymbolTable(); }
-    
+
+    // Assembler part
+    void AssemblyInstruction(string& content, int& loc);
+
+    //Machine language part
+    void MachineInstruction(string& content, int& loc);
+
     // Run emulator on the translation.
     void RunProgramInEmulator() { cout << "Must implementL RunProgramInEmulator( )" << endl; }
 
@@ -35,8 +41,18 @@ private:
     Instruction m_inst;	    // Instruction object
     emulator m_emul;        // Emulator object
 
-    void AssemblyInstruction(string& content, int& loc);
-    void MachineInstruction(string& content, int& loc);
+    bool CheckOperands();
+    void HandleOrgOperation(int& loc);
+    bool CheckLabel();
+    bool CheckLabelDefinition();
+   // void HandleDsOperation(int& loc);
+    void HandleDcOperation(string& content, int& loc);
 
+    bool ValidateInstruction();
+    void HandleHaltInstruction();
+    void HandleNonHaltInstruction(string& content, int& loc, const string &OpCode);
+    void UpdateLocation(int& loc);
+
+    
 };
 

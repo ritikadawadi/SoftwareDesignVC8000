@@ -59,6 +59,18 @@ public:
         return m_Operand2;
     }
 
+    inline bool IsNumericOperand1() {
+        return m_IsNumericOperand1;
+    }
+
+    inline bool IsNumericOperand2() {
+        return m_IsNumericOperand2;
+    }
+
+    inline int GetNumOpCode() {
+        return m_NumOpCode;
+    }
+
     inline string& GetInstruction() {
 
         return m_instruction;

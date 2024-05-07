@@ -21,6 +21,8 @@
 #include <map>
 #include <vector>
 #include <algorithm>
+#include <functional>
+#include <exception>
 
 using namespace std;
 
