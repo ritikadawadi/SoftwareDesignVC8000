@@ -8,8 +8,8 @@ class Instruction {
 
 public:
 
-    Instruction( ) { };
-    ~Instruction( ) { };
+    Instruction() {};
+    ~Instruction() { };
 
     // Codes to indicate the type of instruction we are processing.  Why is this inside the
     // class?  We should make this an enum class.  We will do this during a lecture.
@@ -20,65 +20,52 @@ public:
         ST_End,                 // end instruction.
         ST_Error                // Statement has an error.
     };
+
     // Parse the Instruction.
     InstructionType ParseInstruction(string a_line);
-    //{
-    //    cout << "Must implement: ParseInstruction( )" << endl;
-    //    return InstructionType::ST_MachineLanguage;
-    //}
-
-    // Compute the location of the next instruction.
+    
     int LocationNextInstruction(int a_loc);
 
-    // To access the label
-    inline string &GetLabel( ) {
+    //getter functions
+
+    inline string& GetLabel() {
 
         return m_Label;
     };
-    // To determine if a label is blank.
-    inline bool isLabel( ) {
+    
+    inline bool isLabel() {
 
-        return ! m_Label.empty();
+        return !m_Label.empty();
     };
 
-    // To access the OpCode
-    inline string &GetOpCode() {
+    inline string& GetInstruction() {
+        return m_instruction;
+    };
 
-        return m_OpCode;
-    }
-
-    // To access the Operand1
-    inline string &GetOperand1() {
-
+    inline string& GetOperand1() {
         return m_Operand1;
-    }
+    };
 
-    // To access the Operand2
     inline string& GetOperand2() {
-
         return m_Operand2;
-    }
+    };
+
+    inline string& GetOpCode() {
+        return m_OpCode;
+    };
 
     inline bool IsNumericOperand1() {
         return m_IsNumericOperand1;
-    }
+    };
 
     inline bool IsNumericOperand2() {
         return m_IsNumericOperand2;
-    }
-
+    };
     inline int GetNumOpCode() {
         return m_NumOpCode;
-    }
-
-    inline string& GetInstruction() {
-
-        return m_instruction;
-    }
-
+    };
 
 private:
-
 
     // The elemements of a instruction
     string m_Label;        // The label.
@@ -95,14 +82,15 @@ private:
 
     bool m_IsNumericOperand1 = false;// == true if the operand 1 is numeric.
     int m_Operand1NumericValue = 0;   // The value of the operand 1 if it is numeric.
-    
+
     bool m_IsNumericOperand2 = false;// == true if the operand 2 is numeric.
     int m_Operand2NumericValue = 0;   // The value of the operand 2 if it is numeric.
-
+    
+    // Deletes Comments
     void DeleteComment(string& a_line);
 
     // Record the fields of the instructions.
-    bool RecordFields( const string &a_line );
+    bool RecordFields(const string& a_line);
 
     // Get the fields that make up the statement.  This function returns false if there
     // are extra fields.
@@ -113,10 +101,3 @@ private:
     bool isStrNumber(const string& a_str);
 
 };
-
-
-/*
-    Enum class:
-    Provides a scoped and type-safe way to define enumerators. It can be used inside s class to make 
-    the code more organized. They are compile time constants. 
-*/

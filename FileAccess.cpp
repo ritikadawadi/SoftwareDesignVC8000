@@ -104,6 +104,7 @@ bool FileAccess::GetNextLine( string &a_line )
 /*
 NAME:
 
+
     rewind() - goes to the very beginning of the file 
 
 SYNOPSIS:

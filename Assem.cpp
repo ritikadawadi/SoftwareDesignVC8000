@@ -22,6 +22,7 @@ int main( int argc, char *argv[] )
     
     // Run the emulator on the translation of the assembler language program that was generated in Pass II.
     assem.RunProgramInEmulator();
+
    
     // Terminate indicating all is well.  If there is an unrecoverable error, the 
     // program will terminate at the point that it occurred with an exit(1) call.

@@ -32,7 +32,7 @@ public:
     void MachineInstruction(string& content, int& loc);
 
     // Run emulator on the translation.
-    void RunProgramInEmulator() { cout << "Must implementL RunProgramInEmulator( )" << endl; }
+    void RunProgramInEmulator(); //{ cout << "Must implementL RunProgramInEmulator( )" << endl; }
 
 private:
 
@@ -40,19 +40,21 @@ private:
     SymbolTable m_symtab;   // Symbol table object
     Instruction m_inst;	    // Instruction object
     emulator m_emul;        // Emulator object
+    
+    void CheckOperandsAndLabels();
+    void HandleORGOperation(int& a_loc);
+    void HandleDSOperation(int& a_loc);
+    void HandleDCOperation(int& a_loc, string& a_content);
+    void InsertIntoMemory(int& a_loc, const string& a_content);
+    void ProcessInstruction(int& a_loc, string& a_content);
 
-    bool CheckOperands();
-    void HandleOrgOperation(int& loc);
-    bool CheckLabel();
-    bool CheckLabelDefinition();
-   // void HandleDsOperation(int& loc);
-    void HandleDcOperation(string& content, int& loc);
-
-    bool ValidateInstruction();
-    void HandleHaltInstruction();
-    void HandleNonHaltInstruction(string& content, int& loc, const string &OpCode);
-    void UpdateLocation(int& loc);
-
+    void FormatOpCode(string& OpCode);
+    void CheckForHALTOperation();
+    void CheckForLabelErrors();
+    void CheckOperandPresenceAndType(string& a_content, int& location, string& locate);
+    void HandleNumericOperand1(string& a_content, int& location, string& locate, const string& OpCode);
+    void HandleSymbolicOperand1(string& a_content, int& location, string& locate, const string& OpCode);
+    void ProcessMachineInstruction(string& a_content, int& a_loc);
     
 };
 

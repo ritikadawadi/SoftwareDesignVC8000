@@ -101,12 +101,15 @@ void Assembler::PassI( )
 }
 /*
 NAME:
+
     PassII() - Translates and records errors
 
 SYNOPSIS:
+
     Assembler::PassII();
         
 DESCRIPTION:
+
     This function translates each line, and also records and displays errors.
     Initially, the function rewinds to the beginning of the file. It creates a location variable and sets it to
     0. Inside a while loop, if there is not a next line, an error is returned, as the last line should be of type 
@@ -127,6 +130,9 @@ void Assembler::PassII()
     string content;
 
     //print title
+    cout << endl;
+    cout << "VC8000 , Ritika's version! " << endl;
+    cout << endl; 
     cout << "Translation of the program into machine language..." << endl;
     cout << "Location\tContents\t\t Original Statement" << endl;
 
@@ -141,32 +147,34 @@ void Assembler::PassII()
             // if there are no more lines, we are probably missing the end statement
             Errors::RecordError("Error! No End Statement");
             Errors::DisplayErrors();
+            return;
         }
         Instruction::InstructionType st = m_inst.ParseInstruction(line);
 
             switch (st)
             {
-            case Instruction::InstructionType::ST_End:
+            case Instruction::InstructionType::ST_End: {
                 cout << "\t\t\t" << m_inst.GetInstruction() << endl;
-
+                bool foundNonEmpty = false;
                 while (m_facc.GetNextLine(line))
                 {
                     if (!line.empty()) {
                         Errors::RecordError("Error! Last Statement is not the end!");
                         Errors::DisplayErrors();
+                        foundNonEmpty = true;
                     }
-                    else {
-                        continue;
+                    if (!foundNonEmpty) {
+                        return;
                     }
                 }
                 break;
-
+            }
             case Instruction::InstructionType::ST_Comment:
                 cout << "\t\t\t\t" << m_inst.GetInstruction() << endl;
                 break;
 
-            case Instruction::InstructionType::ST_Error:
-                Errors::RecordError("Error! Invalid Operation " + m_inst.GetInstruction());
+            case Instruction::InstructionType::ST_Error: 
+                Errors::RecordError("Error! Invalid Operation" + m_inst.GetInstruction());
                 Errors::DisplayErrors();
                 break;
                
@@ -203,178 +211,227 @@ void Assembler::PassII()
     }
 
 }
-
-/*
-NAME:
-    AssemblyInstruction() - Process the assembly language instruction and records errors
-
-SYNOPSIS:
-    Assembler::AssemblyInstruction(string& content, int& loc);
-    &content    --> content of the program 
-    &loc        --> the location of the code
-
-DESCRIPTION:
-
-RETURN:
-    void
-*/
-
-void Assembler::AssemblyInstruction(string& a_content, int& a_loc) {
-     
-    // Check operands
-    if (!CheckOperands()) {
-        return;
-    }
-
-    // handle ORG operation
-    if (m_inst.GetOpCode() == "ORG") {
-        HandleOrgOperation(a_loc);
-    }
-
-    // handle DC or DS operations
-    else {
-        //check label
-        if (CheckLabel()) {
-            //return;
-        }
-
-        // check if label is defined in multiple locations
-        if (!CheckLabelDefinition()) {
-            //return;
-        }
-
-        // handle DS operation, if it is DS, the instruction will be printed 
-        if (m_inst.GetOpCode() == "DS") {
-           // HandleDsOperation(a_loc);
-            cout << a_loc << "\t\t\t" << m_inst.GetInstruction() << endl;
-        }
-
-        // handle DC operator
-        else {
-            HandleDcOperation(a_content, a_loc);
-        }
-    }
-
-    a_loc = m_inst.LocationNextInstruction(a_loc);
-
-}
-
-bool Assembler::CheckOperands() {
-    //checks for operand 2
-
-    bool errorFound = false;
-
+void Assembler::CheckOperandsAndLabels() {
     if (!m_inst.GetOperand2().empty()) {
         Errors::RecordError("Error! Operand 2 found in Assembly Instruction!");
         Errors::DisplayErrors();
-        errorFound = true;
     }
-    
-    // Checks for operand 1
-    if (!m_inst.GetOperand1().empty()) {
-        Errors::RecordError("Error! Missing operand 1 in " + m_inst.GetOpCode());
+    if (m_inst.GetOperand1().empty()) {
+        Errors::RecordError("Error! Missing Operand 1 in " + m_inst.GetOpCode());
         Errors::DisplayErrors();
-        errorFound = true;
     }
-
-    //Checks if operand 1 is numeric 
     else if (!m_inst.IsNumericOperand1()) {
-        Errors::RecordError("Error! Operand 1 must be numeric in " + m_inst.GetOpCode());
+        Errors::RecordError("Error! Operand must be Numeric in " + m_inst.GetOpCode());
         Errors::DisplayErrors();
-        errorFound = true;
     }
-
-    // Checks if value in operand 1 is larger than 10000
     if (m_inst.IsNumericOperand1()) {
         if (stoi(m_inst.GetOperand1()) > 10000) {
             Errors::RecordError("Error! Very large value of Operand 1 in " + m_inst.GetOpCode());
             Errors::DisplayErrors();
-            errorFound = true;
         }
     }
-    return errorFound;
-}
-
-
-
-void Assembler::HandleOrgOperation(int& a_loc) {
-    // checks if label exists or not
-    if (!m_inst.GetLabel().empty()) {
-        Errors::RecordError("Error! Label found in the ORG.");
-        Errors::DisplayErrors();
-    }
-    // if no label, prints out the instruction 
-    cout << a_loc << "\t\t\t" << m_inst.GetInstruction() << endl;
-}
-
-bool Assembler::CheckLabel() {
-    // checks if the label exists or not
-    if (m_inst.GetLabel().empty()) {
+    if (m_inst.GetLabel().empty() && m_inst.GetOpCode() != "ORG") {
         Errors::RecordError("Error! Label not found in " + m_inst.GetOpCode());
         Errors::DisplayErrors();
-        return false;
     }
-    return true;
+    else {
+        int temp;
+        m_symtab.LookupSymbol(m_inst.GetLabel(), temp);
+        if (temp == m_symtab.multipleDefinedSymbol) {
+            Errors::RecordError("Error! Symbol Defined in Multiple Locations");
+            Errors::DisplayErrors();
+        }
+    }
 }
 
-bool Assembler::CheckLabelDefinition() {
-    // looks up the symbol table to see if there are multiple locations of the label
-    int temp;
-    m_symtab.LookupSymbol(m_inst.GetLabel(), temp);
-    if (temp == m_symtab.multipleDefinedSymbol) {
-        Errors::RecordError("Error! symbol(label) Defined in multiple locations");
+void Assembler::HandleORGOperation(int& a_loc) {
+    if (!m_inst.GetLabel().empty()) {
+        Errors::RecordError("Error! Label found in ORG!");
         Errors::DisplayErrors();
-        return false;
     }
-    return true;
+    cout << a_loc << "\t\t\t\t" << m_inst.GetInstruction() << endl;
 }
 
-void Assembler::HandleDcOperation(string& a_content, int& a_loc) { 
+void Assembler::HandleDSOperation(int& a_loc) {
+    cout << a_loc << "\t\t\t\t" << m_inst.GetInstruction() << endl;
+}
 
+void Assembler::HandleDCOperation(int& a_loc, string& a_content) {
     a_content = m_inst.GetOperand1();
-
     while (a_content.size() != 9) {
         a_content = "0" + a_content;
     }
-    // inserting into the memory
+    InsertIntoMemory(a_loc, a_content);
+    cout << a_loc << "\t\t\t" << a_content << "\t\t" << m_inst.GetInstruction() << endl;
+}
+
+void Assembler::InsertIntoMemory(int& a_loc, const string& a_content) {
     m_emul.insertMemory(a_loc, stoll(a_content));
-    cout << a_loc << "\t  " << a_content << "\t\t" << m_inst.GetInstruction() << endl; 
+}
+
+void Assembler::ProcessInstruction(int& a_loc, string& a_content) {
+    if (m_inst.GetOpCode() == "ORG") {
+        HandleORGOperation(a_loc);
+    }
+    else if (m_inst.GetOpCode() == "DS") {
+        HandleDSOperation(a_loc);
+    }
+    else { // Assuming it's "DC"
+        HandleDCOperation(a_loc, a_content);
+    }
+    a_loc = m_inst.LocationNextInstruction(a_loc);
+}
+
+void Assembler::AssemblyInstruction(string& a_content, int& a_loc) {
+    CheckOperandsAndLabels();
+
+    ProcessInstruction(a_loc, a_content);
 }
 
 
-/*
-NAME:
-    MachineInstruction() -
+void Assembler::FormatOpCode(string& OpCode) {
+    if (OpCode.size() != 2) {
+        OpCode = "0" + OpCode;
+    }
+}
 
-SYNOPSIS:
-    Assembler::MachineInstruction(string& content, int& loc);
-    &content    --> content of the program 
-    &loc        --> the location of the code
+void Assembler::CheckForHALTOperation() {
+    if (m_inst.GetOpCode() == "HALT") {
+        if (!m_inst.GetOperand1().empty()) {
+            Errors::RecordError("Error! Operand found in " + m_inst.GetOpCode());
+            Errors::DisplayErrors();
+        }
+        if (!m_inst.GetLabel().empty()) {
+            Errors::RecordError("Error! Label found in " + m_inst.GetOpCode());
+            Errors::DisplayErrors();
+        }
+    }
+}
 
+void Assembler::CheckForLabelErrors() {
+    if (!m_inst.GetLabel().empty()) {
+        int temp;
+        m_symtab.LookupSymbol(m_inst.GetLabel(), temp);
+        if (temp == m_symtab.multipleDefinedSymbol) {
+            Errors::RecordError("Error! Symbol Defined in Multiple Locations");
+            Errors::DisplayErrors();
+        }
+    }
+}
 
-DESCRIPTION:
+void Assembler::CheckOperandPresenceAndType(string& a_content, int& location, string& locate) {
+    if (!m_inst.IsNumericOperand1()) {
+        if (m_inst.GetNumOpCode() != 11 && m_inst.GetNumOpCode() != 12 && m_inst.GetNumOpCode() != 17) {
+            Errors::RecordError("Error! No Register found in " + m_inst.GetInstruction());
+            Errors::DisplayErrors();
+        }
+        if (!m_inst.GetOperand2().empty()) {
+            Errors::RecordError("Error! Extra Operand found in " + m_inst.GetOpCode());
+            Errors::DisplayErrors();
+        }
+    }
+    else {
+        if (stoi(m_inst.GetOperand1()) < 0 || stoi(m_inst.GetOperand1()) > 9) {
+            Errors::RecordError("Error::Invalid Register value");
+            Errors::DisplayErrors();
+        }
+        if (m_inst.GetOperand2().empty()) {
+            Errors::RecordError("Error! Operand 2 missing in " + to_string(m_inst.GetNumOpCode()));
+            Errors::DisplayErrors();
+        }
+    }
+}
 
-RETURN:
-    void
-*/
+void Assembler::HandleNumericOperand1(string& a_content, int& location, string& locate, const string& OpCode) {
+    if (m_inst.GetNumOpCode() >= 7 && m_inst.GetNumOpCode() <= 10) {
+        if (!m_inst.IsNumericOperand2()) {
+            Errors::RecordError("Error! Operand 2 must be numeric in " + m_inst.GetOpCode());
+            Errors::DisplayErrors();
+        }
+        else {
+            if (stoi(m_inst.GetOperand2()) < 0 || stoi(m_inst.GetOperand2()) > 9) {
+                Errors::RecordError("Error::Invalid Register value");
+                Errors::DisplayErrors();
+            }
+        }
+        a_content = OpCode + m_inst.GetOperand1() + m_inst.GetOperand2();
+        while (a_content.size() != 9) {
+            a_content = a_content + "0";
+        }
+    }
+    else {
+        a_content = OpCode + m_inst.GetOperand1();
+        m_symtab.LookupSymbol(m_inst.GetOperand2(), location);
+        if (location == 0) {
+            Errors::RecordError("Error! Cannot find the location of the symbol " + m_inst.GetOperand2());
+            Errors::DisplayErrors();
+        }
+        locate = to_string(location);
+        while (locate.size() != 6) {
+            locate = "0" + locate;
+        }
+        a_content = a_content + locate;
+    }
+}
+
+void Assembler::HandleSymbolicOperand1(string& a_content, int& location, string& locate, const string& OpCode) {
+    a_content = OpCode + "9";
+    if (!m_inst.GetOperand1().empty()) {
+        m_symtab.LookupSymbol(m_inst.GetOperand1(), location);
+        if (location == 0) {
+            Errors::RecordError("Error! Cannot find the location of the symbol " + m_inst.GetOperand1());
+            Errors::DisplayErrors();
+        }
+    }
+    locate = to_string(location);
+    while (locate.size() != 6) {
+        locate = "0" + locate;
+    }
+    a_content = a_content + locate;
+}
+
+void Assembler::ProcessMachineInstruction(string& a_content, int& a_loc) {
+    string OpCode = to_string(m_inst.GetNumOpCode());
+    FormatOpCode(OpCode);
+    CheckForHALTOperation();
+    CheckForLabelErrors();
+
+    int location = 0;
+    string locate;
+
+    if (!m_inst.IsNumericOperand1()) {
+        HandleSymbolicOperand1(a_content, location, locate, OpCode);
+    }
+    else {
+        CheckOperandPresenceAndType(a_content, location, locate);
+        HandleNumericOperand1(a_content, location, locate, OpCode);
+    }
+
+    // Inserting into memory and calculating location of next instruction
+    m_emul.insertMemory(a_loc, stoll(a_content));
+    cout << a_loc << "\t\t" << a_content << "\t\t" << m_inst.GetInstruction() << endl;
+    a_loc = m_inst.LocationNextInstruction(a_loc);
+}
 
 void Assembler::MachineInstruction(string& a_content, int& a_loc) {
-        
-    // to check basic operands and labels 
-    if (!ValidateInstruction() && CheckLabelDefinition()) {
-        return;
-    }
-
-    // to handle HALT operation
-    if (m_inst.GetOpCode() == "HALT") {
-        HandleHaltInstruction();
-    }
-    
-    
-
+    ProcessMachineInstruction(a_content, a_loc);
 }
 
 
+void Assembler::RunProgramInEmulator() {
+    cout << "----------------------------------------------" << endl;
+    cout << "Press Enter to continue..." << endl;
+    cin.ignore();
+    cout << "Results from Emulating Program:" << endl;
 
-
-
+    //run only when there are no errors
+    /**/
+    if (Errors::NoError()) {
+        m_emul.runProgram();
+    }
+    else {
+        cout << "Emulator cannot run because of Errors!" << endl;
+    }
+    cout << "End of Emulation" << endl;
+}
+/*void Assembler::RunProgramInEmulator()*/

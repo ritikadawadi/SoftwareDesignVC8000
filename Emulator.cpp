@@ -20,6 +20,7 @@ RETURN:
 
 */
 
+/*
 
 emulator::emulator() {
 	// Initialize memory and registers to default values
@@ -30,7 +31,7 @@ emulator::emulator() {
 		return input;
 		};
 }
-
+*/
 
 /*
 
@@ -54,7 +55,8 @@ RETURN:
 
 bool emulator::insertMemory(int a_location, long long a_contents) {
 		
-	if (a_location < 0 || a_location >= MEMSZ) {
+	//a_location = a_location + 1;
+	if ( a_location >= MEMSZ) {
 		cerr << "Error: Memory location out of bounds " << endl;
 		return false;
 	}
@@ -87,18 +89,17 @@ bool emulator::runProgram() {
 
 	// initializes variable that stores opcode, reg1, reg2 and address
 	int counter = 0;
-	int OpCode = 0;
-	int reg1 = 0;
-	int reg2 = 0;
-	int address = 0;
+	long long OpCode = 0;
+	long long reg1 = 0;
+	long long reg2 = 0;
+	long long address = 0;
 
-	while (counter<MEMSZ) {
+	while (counter < MEMSZ) {
 		long long contents = (m_memory[counter]);
 		if (contents == 0) {
 			counter++;
 			continue;
 		}
-
 
 		// calculates the different calues from the content
 		OpCode = contents / 10'000'000;
@@ -108,7 +109,7 @@ bool emulator::runProgram() {
 
 		try {
 			switch (OpCode) {
-			case1:
+			case 1:
 				// c(Reg) + c(ADDR) --> Reg
 				m_reg[reg1] += m_memory[address];
 				break;
@@ -185,7 +186,7 @@ bool emulator::runProgram() {
 				counter = MEMSZ;
 				break;
 			default:
-				throw runtime_error("Error! Invalid OpCode encountered!")
+				throw runtime_error("Error! Invalid OpCode encountered!");
 			}
 		}
 		catch (const exception& e) {

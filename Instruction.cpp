@@ -1,14 +1,16 @@
-
-//		Implementation of the Instruction  class. 
+// Implementation of Instruction Class
 #include "stdafx.h"
 #include "Instruction.h"
+#include "Errors.h"
 
 /*
 NAME:
+
     ParseInstruction - Parses instruction to determine its type- assembly language, machine language,
     comments, end instruction, or an error.
 
 SYNOPSIS:
+
     InstructionType Instruction::ParseInstruction(string a_line);
     a_line      --> reprsents a single line of code from the source file. The function takes in a_line
                     determine the type of instruction it represents, based on the InstructionType enum.
@@ -17,11 +19,13 @@ SYNOPSIS:
 DESCRIPTION:
 
     Parsing invloves breaking down the input into smaller components, and determining their significance.
-    a_line is not passed by reference, as in this case it is not required to modify the contents of the 
+    a_line is not passed by reference, as in this case it is not required to modify the contents of the
     lines from the inputfile. The major task is to read each line and determine its type and field. So,
-    a copy of the line is made when iterpreting its content instead of altering the file itself. 
+    a copy of the line is made when iterpreting its content instead of altering the file itself.
 
+RETURN:
 
+    Returns the instruction type
 */
 // parse an instruction and return its type. 
 Instruction::InstructionType Instruction::ParseInstruction(string a_line)
@@ -30,11 +34,11 @@ Instruction::InstructionType Instruction::ParseInstruction(string a_line)
     m_instruction = a_line;
 
     // Delete any comment from the line.
-    DeleteComment( a_line );
+    DeleteComment(a_line);
 
     // Record label, opcode, and operands.  Up to you to deal with formatting errors.
-    bool isFormatError = RecordFields( a_line );
-    
+    bool isFormatError = RecordFields(a_line);
+
     // Check if this is a comment.
     if (m_Label.empty() && m_OpCode.empty())
     {
@@ -43,45 +47,17 @@ Instruction::InstructionType Instruction::ParseInstruction(string a_line)
     // Return the instruction type.  This has to be handled in the code.
     return m_type;
 }
+/*Instruction::InstructionType Instruction::ParseInstruction(string a_line)*/
 
 /*
-  NAME:
-      DeleteComment() - deletes comments, void function.
-
-  SYNOPSIS:
-      void DeleteComment(string &a_line);
-      &a_line        --> a line from the input file is passed by reference,
-                          and the fucntion checks if it is a comment
-
-  DESCRIPTION:
-      If the function finds ';' synbol, it deletes the line because,
-      all comments begin with a ';' symbols. In this function size_t is a
-      data type that returns the position of the first occurance of character
-      in find(). npos represents the largest possible size of any object.
-      So, if the semicolon is found, it will be in a certain position,
-      so it will not be equal to 'npos' in which case, the case inside
-      the if block will be executed.
-
-  */
-  // Delete any comments from the statement.
-void Instruction::DeleteComment(string& a_line)
-{
-    size_t isemi1 = a_line.find(';');
-    if (isemi1 != string::npos)
-    {
-        a_line.erase(isemi1);
-    }
-}
-
-/*
-NAME: 
+NAME:
 
     RecordFields();
 
 SYNOPSIS:
 
     bool RecordFields( const string &a_line );
-    &a_line     --> a_line is pass by const reference here, as it modifies the 
+    &a_line     --> a_line is pass by const reference here, as it modifies the
                     line according to its content type.
     returns true if the function successfully records the fields, and false if there is a format error
 
@@ -108,29 +84,38 @@ MACHINE LAN OPCODES:
 ASSEMBLER OPCODES:
 
     DC: Define constant
-    DS: Define storage 
+    DS: Define storage
     ORG: Define origin
     END: End
 
 DESCRIPTION:
 
-        This function calls several other functions of the Instruction class. Initially, it calls the 
-        ParseLineIntoFields function. The function assigns the a_line into it's respective elements. 
-        Subsequently, it checks for any comments and operands in the a_line string. 
+        This function calls several other functions of the Instruction class. Initially, it calls the
+        ParseLineIntoFields function. The function assigns the a_line into it's respective elements.
+        Subsequently, it checks for any comments and operands in the a_line string.
         The function calls isStrNumber on operand 1 and operand 2, and if it
         returns true it uses stoi() function from standard library. stoi() converts a
         string represting an integer to an integer type. All the character of the function are converted
         to uppercase. Two arrays of machine language opcode and assembler instruction is initialized.
         The fucntion checks if m_OpCode is any of the above by comparing it with the elements of the arrays.
-        it assigns m_type into the respective type from the enum class. 
+        it assigns m_type into the respective type from the enum class.
 
+RETURNS:
+    bool true if sucessfully records the fields, false if there is format error
 
 */
 // Record the fields that make up the instructions.
-bool Instruction::RecordFields( const string &a_line )
+
+bool Instruction::RecordFields(const string& a_line)
 {
     // Get the fields that make up the instruction.
-    bool isFormatError = ParseLineIntoFields( a_line, m_Label, m_OpCode, m_Operand1, m_Operand2);
+    bool isFormatError = !ParseLineIntoFields(a_line, m_Label, m_OpCode, m_Operand1, m_Operand2);
+
+    //throw error if extra operand is found
+    if (isFormatError) {
+        Errors::RecordError("Error! Extra Operand Found");
+        Errors::DisplayErrors();
+    }
 
     // if code was a comment, there is nothing to do.
     if (m_OpCode.empty() && m_Label.empty()) return isFormatError;
@@ -147,56 +132,53 @@ bool Instruction::RecordFields( const string &a_line )
     {
         c = toupper(c);
     }
-  
-    // - Determine and record the instruction type from the op code.
+    // - Determining and recording the instruction type from the op code.
     // - Recording the numberic Op code for machine lanuage equivalents.
 
-    string Machine_OpCodes[] = { "ADD", "SUB", "MULT", "LOAD", "STORE", "ADDR", "SUBR", "MULTR", "DIVR"
-                                "READ", "WRITE", "B", "BM", "BZ", "BP", "HALT" };
-    string Assembler_OpCode[] = { "DC", "DS", "ORG", "END" };
-
-    int size_M = sizeof(Machine_OpCodes) / sizeof(Machine_OpCodes[0]);
-    int size_A = sizeof(Assembler_OpCode) / sizeof(Assembler_OpCode[0]);
-
-    // to determine if machine code
-    for (int i = 0; i < size_M; i++) {
-        if (m_OpCode == Machine_OpCodes[i]) {
+    vector<string> MEquivalent = { "ADD","SUB","MULT","DIV","LOAD","STORE","ADDR","SUBR","MULTR","DIVR","READ","WRITE","B","BM","BZ","BP","HALT" };
+    vector<string> AEquivalent = { "DC","DS","ORG","END" };
+    for (int i = 0; i < (int)MEquivalent.size(); i++) {
+        if (m_OpCode == MEquivalent.at(i)) {
             m_type = InstructionType::ST_MachineLanguage;
             m_NumOpCode = i + 1;
             return true;
         }
     }
 
-    // to determine if assembly instruction
-    for (int i = 0; i < size_A; i++) {
-        if (i < size_A - 1) {
-            if (m_OpCode == Assembler_OpCode[i]) {
+    for (int i = 0; i < (int)AEquivalent.size(); i++) {
+
+        if (i < (int)AEquivalent.size() - 1) {
+            if (m_OpCode == AEquivalent.at(i)) {
                 m_type = InstructionType::ST_AssemblerInstr;
                 return true;
             }
         }
-        if (m_OpCode == Assembler_OpCode[size_A - 1]) {
+        if (m_OpCode == AEquivalent.at((int)AEquivalent.size() - 1)) {
             m_type = InstructionType::ST_End;
             return true;
         }
     }
 
-    // to determine if comment
-    if (m_Label.empty() && m_OpCode.empty()) {
+    //determining the comment
+    if (m_Label.empty() && m_OpCode.empty())
+    {
         m_type = InstructionType::ST_Comment;
         return true;
     }
 
-    // is a error if it is none of above
+    //If it is not anything else, must be an error
     m_type = InstructionType::ST_Error;
     return true;
 }
+/*bool Instruction::RecordFields( const string &a_line )*/
 
 /*
-NAME: 
+NAME:
+
     ParseLineIntoFields(); - parses the instruction to its respective fields
 
 SYNOPSIS:
+
     bool ParseLineIntoFields(string a_line, string& a_label, string& a_OpCode,
     string& a_Operand1, string& a_Operand2)
     a_line          --> represents a single line of assembly line instruction, is passed by value
@@ -206,31 +188,32 @@ SYNOPSIS:
     &a_Operand2     --> records the operand2 in the instruction
 
 DESCRIPTION:
+
     This boolean function is reposnsible for splitting an instruction line into label, operation code,
-    and operands. All the elements are initialized to empty strings. If the assembly language line ie 
+    and operands. All the elements are initialized to empty strings. If the assembly language line ie
     a_line is empty, it returns false which indicates that there is nothing to parse. Else, it will replace
     all the commas ',' in the line with a blank space. An istringstream object is initialized with a_line, which
-    allows to treat a_line as a stream. If the first character of the input line is a space or a tab, it implies 
+    allows to treat a_line as a stream. If the first character of the input line is a space or a tab, it implies
     the absence of a label. So, it reads operation code, operand1 and operand2 into the respective variables. Else,
-    it reads label along with the afforementioned variables. If there is still extra data, it returns true. 
+    it reads label along with the afforementioned variables. If there is still extra data, it returns true.
+
+RETURNS:
+
+    bool true if sucessfully parses the instruction into fields, false if there were additional characters
 
 */
 
-// Parse the intruction into fields.
+/**/
+
 bool Instruction::ParseLineIntoFields(string a_line, string& a_label, string& a_OpCode,
     string& a_Operand1, string& a_Operand2)
 {
-    // Initialize the statrment elements to empty strings.
-    a_label = a_OpCode = a_Operand1 = a_Operand2 = "";
-
-    // If this is an empty string, return indicating that it is OK.
-    if (a_line.empty()) return false;
-
     // Get rid of any commas from the line.
     replace(a_line.begin(), a_line.end(), ',', ' ');
 
     // Get the elements of the line.  That is the label, op code, operand1, and operand2.
     string endStr;
+    a_label = a_OpCode = a_Operand1 = a_Operand2 = "";
     istringstream ins(a_line);
     if (a_line[0] == ' ' || a_line[0] == '\t')
     {
@@ -241,29 +224,40 @@ bool Instruction::ParseLineIntoFields(string a_line, string& a_label, string& a_
     {
         ins >> a_label >> a_OpCode >> a_Operand1 >> a_Operand2 >> endStr;
     }
-    // If there is extra data, return true.
-    return ! endStr.empty() ? false : true;
+    // If there is extra data, return false.
+    return endStr.empty() ? true : false;
 }
+/*bool Instruction::ParseLineIntoFields(string a_line, string& a_label, string& a_OpCode,
+    string& a_Operand1, string& a_Operand2)*/
 
 /*
-NAME: 
+NAME:
+
     isStrNumber - checks if a string has more than 2 characters
-                  and if it contains any numbers. 
+                    and if it contains any numbers.
 
 SYNOPSIS:
+
     bool isStrNumber(const string& a_str);
     &a_str      --> A string is passed by reference, and the
                     fucntion checks for any digits in the string
 
 DESCRIPTION:
+
     boolean function.
     The function checks if the string is empty, using the /empty() method,
     and returns false if it is empty. Then it proceeds to check if
     the characters within '-' and '+' are more than 2 in length. Lastly,
-    the function checks for any digits, and returns true if it does not 
+    the function checks for any digits, and returns true if it does not
     find any digit.
 
+RETURNS:
+
+    bool true if the string is all numbers, otherwise returns false
+
 */
+
+
 bool Instruction::isStrNumber(const string& a_str)
 {
     if (a_str.empty()) return false;
@@ -282,28 +276,76 @@ bool Instruction::isStrNumber(const string& a_str)
     }
     return true;
 }
+/*bool Instruction::isStrNumber(const string& a_str)*/
+
+/*
+
+/*
+  NAME:
+
+      DeleteComment() - deletes comments, void function.
+
+  SYNOPSIS:
+
+      void DeleteComment(string &a_line);
+      &a_line        --> a line from the input file is passed by reference,
+                          and the fucntion checks if it is a comment
+
+  DESCRIPTION:
+
+      If the function finds ';' synbol, it deletes the line because,
+      all comments begin with a ';' symbols. In this function size_t is a
+      data type that returns the position of the first occurance of character
+      in find(). npos represents the largest possible size of any object.
+      So, if the semicolon is found, it will be in a certain position,
+      so it will not be equal to 'npos' in which case, the case inside
+      the if block will be executed.
+
+RETURNS:
+    
+    void, so returns nothing
+
+  */
+  // Delete any comments from the statement.
+
+void Instruction::DeleteComment(string& a_line)
+{
+    size_t isemi1 = a_line.find(';');
+    if (isemi1 != string::npos)
+    {
+        a_line.erase(isemi1);
+    }
+}
 
 
 /*
 NAME:
+
     LocationNextInstruction() - Determines the next location
 
 SYNOPSIS:
+
     int LocationNextInstruction(int a_loc);
         a_loc       ---> Represents the current location in the program's memory
     returns the location of the next instruction
 
 DESCRIPTION:
+
     The function determines the location of the next location based on the current location's
-    operation code and its operands. If the current location is either DS or ORG, it will add that to 
-    location, else it will increment location by 1. 
+    operation code and its operands. If the current location is either DS or ORG, it will add that to
+    location, else it will increment location by 1.
+
+RETURNS:
+   
+   int, so returns the location of the next instruction 
 */
 
 int Instruction::LocationNextInstruction(int a_loc) {
-        
-    if (m_OpCode == "DS" || m_OpCode == "ORG")
+
+    if (m_OpCode == "ORG" || m_OpCode == "DS")
     {
         return a_loc + m_Operand1NumericValue;
     }
     return a_loc + 1;
 }
+

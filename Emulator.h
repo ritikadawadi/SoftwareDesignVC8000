@@ -10,7 +10,9 @@ public:
 
     const static int MEMSZ = 1'000'000;	// The size of the memory of the VC8000.
 
-    emulator();
+    emulator() {
+        m_memory.resize(MEMSZ, 0);
+    }
 
     // Records instructions and data into simulated memory.
     bool insertMemory(int a_location, long long a_contents);

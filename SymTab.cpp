@@ -60,7 +60,7 @@ SymbolTable::DisplaySymbolTable()
     cout << "Symbol No. \t\t Symbol \t\t Location" << endl;
     for (auto it = m_symbolTable.begin(); it != m_symbolTable.end(); ++it)
     {
-        cout << count++ << it->first << it->second << endl;
+        cout << count++ <<"\t\t\t\t" << it->first <<"\t\t\t\t" << it->second << endl;
     }
     cout << "-----------------------------" << endl;
 }
