@@ -1,19 +1,20 @@
 //
-//		Implementation of the emulator table class.  
+//		Implementation of the Emulator table class.  
 //
 #include "stdafx.h"
 #include "Emulator.h"
+#include <string>
 
 /*
 NAME: 
-	emulator() - constructor for the emulator class
+	Emulator() - constructor for the Emulator class
 
 SYNOPSIS:
-	emulator::emulator()
+	Emulator::Emulator()
 
 DESCRIPTION:
 	When called, the function prompts the user with input, and reads the input. 
-	This ensure that the emulator can dynamically interact with user during the execution
+	This ensure that the Emulator can dynamically interact with user during the execution
 
 RETURN:
 	none
@@ -22,7 +23,7 @@ RETURN:
 
 /*
 
-emulator::emulator() {
+Emulator::Emulator() {
 	// Initialize memory and registers to default values
 	inputReader = []() -> int {
 		cout << "User Input? ";
@@ -36,10 +37,10 @@ emulator::emulator() {
 /*
 
 NAME:
-	insertMemory - writes data into specfic location of the emulator's memory
+	insertMemory - writes data into specfic location of the Emulator's memory
 
 SYNOPSIS:
-	emulator::insertMemory(int a_location, long long a_contents);
+	Emulator::insertMemory(int a_location, long long a_contents);
 	a_loc		--> specifies the index in the memory where data should be stored
 	a_content		--> stores a large int value, hold data that needs to be stored at a specfic memory
 
@@ -53,7 +54,7 @@ RETURN:
 	
 */
 
-bool emulator::insertMemory(int a_location, long long a_contents) {
+bool Emulator::insertMemory(int a_location, long long a_contents) {
 		
 	//a_location = a_location + 1;
 	if ( a_location >= MEMSZ) {
@@ -68,10 +69,10 @@ bool emulator::insertMemory(int a_location, long long a_contents) {
 /*
 NAME:
 	runProgram() - reads and executes machine language instruction encoded in a specfic format
-					within an emulator's memory. 
+					within an Emulator's memory. 
 
 SYNOPSIS:
-	emulator::runProgram();
+	Emulator::runProgram();
 
 DESCRIPTION:
 
@@ -85,7 +86,7 @@ RETURN:
 
 */
 
-bool emulator::runProgram() {
+bool Emulator::runProgram() {
 
 	// initializes variable that stores opcode, reg1, reg2 and address
 	int counter = 0;
@@ -106,6 +107,8 @@ bool emulator::runProgram() {
 		reg1 = (contents / 1'000'000) % 10;
 		reg2 = (contents / 100'000) % 10;
 		address = contents % 1'000'000;
+
+		cout << OpCode;
 
 		try {
 			switch (OpCode) {
@@ -187,9 +190,11 @@ bool emulator::runProgram() {
 				break;
 			default:
 				throw runtime_error("Error! Invalid OpCode encountered!");
+				return false;
 			}
 		}
 		catch (const exception& e) {
+			cout << "Error here!!!";
 			cerr << "Execution error " << e.what() << endl;
 			return false;
 		}

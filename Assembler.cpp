@@ -156,7 +156,7 @@ void Assembler::PassII()
             case Instruction::InstructionType::ST_End: {
                 cout << "\t\t\t" << m_inst.GetInstruction() << endl;
                 bool foundNonEmpty = false;
-                while (m_facc.GetNextLine(line))
+                if (m_facc.GetNextLine(line))
                 {
                     if (!line.empty()) {
                         Errors::RecordError("Error! Last Statement is not the end!");
@@ -167,6 +167,8 @@ void Assembler::PassII()
                         return;
                     }
                 }
+                else
+                    return;
                 break;
             }
             case Instruction::InstructionType::ST_Comment:
