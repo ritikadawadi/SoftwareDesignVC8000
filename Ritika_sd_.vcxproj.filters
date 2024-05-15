@@ -65,7 +65,7 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="AssemProg.txt" />
-    <Text Include="TextFile1.txt">
+    <Text Include="test2.txt">
       <Filter>Source Files</Filter>
     </Text>
   </ItemGroup>

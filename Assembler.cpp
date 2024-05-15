@@ -8,21 +8,36 @@
 
 /*
 NAME:
+
     Assembler();
 
 SYNOPSIS:
+
     Assembler::Assembler( int argc, char *argv[] );
-    argc        -> represents the number of command line arguments provided to the program
-    *argc[]     -> reprsents an array of character pointers that consists the names of the programs to be opened
+    argc        --> represents the number of command line arguments provided to the program
+    *argc[]     --> reprsents an array of character pointers that consists the names of the programs to be opened
  
-DESCRIPTION:
-    Construction function.  
+DESCRIPTION: 
+ 
     The constructor initializes the'm_facc' member variable with the Fileaccess constructor. This allows the
     Assembler class to access and process files. 
 
+RETURNS:
+
+    constructor class so returns nothing
+
+AUTHOR:
+
+    Ritika Dawadi
+
+DATE:
+
+    4:00pm 5/14/24
+
 */
 
-// Constructor for the assembler.  Note: we are passing argc and argv to the file access constructor.
+// Constructor for the assembler.  Note: we are passing argc and argv to the file
+//  access constructor.
 // See main program.  
 Assembler::Assembler( int argc, char *argv[] )
 : m_facc( argc, argv )
@@ -30,35 +45,43 @@ Assembler::Assembler( int argc, char *argv[] )
     // Nothing else to do here at this point.
 }  
 
-/*
-NAME:
 
-SYNOPSIS:
-
-DESCRIPTION:
-
-*/
-// Destructor currently does nothing.  You might need to add something as you develope this project.  If not, we can delete it.
-Assembler::~Assembler( )
-{
-}
 
 /*
 NAME: 
+
     PassI() -  Pass I establishes the location of the labels.
 
 SYNOPSIS:
+
     Assembler::PassI();
        
 DESCRIPTION:
 
+    Pass I of the Assembler processes each line of the source code to
+    establish the location of labels before actual instruction generation. 
+    It reads and parses each line to determine if it contains a label and, if so,
+    adds the label and its location to the symbol table. The function handles different 
+    types of instructions, skipping comments and stopping if it encounters an 'end' instruction.
+    It calculates the location of the next instruction based on the current instruction's length 
+    and type. Errors related to missing 'end' statements or other syntax issues are deferred to 
+    Pass II for reporting and resolution.
+
 RETURN:
-    void
-    
-    
+ 
+    void, so returns nothing
+
+AUTHOR:
+
+    Ritika Dawadi
+
+DATE:
+
+    4:00pm 5/14/24
+
 
 */
-//  
+
 void Assembler::PassI( ) 
 {
     int loc = 0;        // Tracks the location of the instructions to be generated.
@@ -99,6 +122,8 @@ void Assembler::PassI( )
         loc = m_inst.LocationNextInstruction( loc );
     }
 }
+
+
 /*
 NAME:
 
@@ -116,9 +141,19 @@ DESCRIPTION:
     'END'. Instruction object is called, which parses the line into its fileds. 
 
 RETURN:
-    void
+
+    void, so returns nothing
+
+AUTHOR:
+
+    Ritika Dawadi
+
+DATE:
+
+    4:00pm 5/14/24
 
 */
+
 void Assembler::PassII()
 {
     m_facc.rewind(); // rewinds to the beginning of the file 
@@ -130,10 +165,12 @@ void Assembler::PassII()
     string content;
 
     //print title
+    std::cout << std::setw(70) << std::setfill('-') << "" << std::endl;
     cout << endl;
     cout << "VC8000 , Ritika's version! " << endl;
     cout << endl; 
     cout << "Translation of the program into machine language..." << endl;
+    cout << endl;
     cout << "Location\tContents\t\t Original Statement" << endl;
 
 
@@ -188,12 +225,14 @@ void Assembler::PassII()
                     break;
                 }
 
+                // checks if the label starts with a digit
                 if (isdigit(m_inst.GetLabel()[0])) {
                     Errors::RecordError("Errors! Label cannot start with an integer in " + m_inst.GetInstruction());
                     Errors::DisplayErrors();
                     break;
                 }
 
+                // checks the location 
                 if (m_inst.LocationNextInstruction(loc) > 999999) {
                     Errors::RecordError("Errors! Memory Overload!");
                     Errors::DisplayErrors();
@@ -213,6 +252,37 @@ void Assembler::PassII()
     }
 
 }
+
+/*
+NAME:
+
+    CheckOperandsAndLabels() - Checks for operand and label errors
+
+SYNOPSIS:
+
+    Assembler::CheckOperandsAndLabels();
+
+DESCRIPTION:
+
+    This function checks for various errors related to operands and labels.
+    It verifies that there is no second operand for assembly instructions,
+    checks that the first operand is present and numeric, and ensures that the label is correctly defined
+    and not duplicated.
+
+RETURN:
+
+    void, so returns nothing
+
+AUTHOR:
+
+    Ritika Dawadi
+
+DATE:
+
+    4:00pm 5/14/24
+
+*/
+
 void Assembler::CheckOperandsAndLabels() {
     if (!m_inst.GetOperand2().empty()) {
         Errors::RecordError("Error! Operand 2 found in Assembly Instruction!");
@@ -246,6 +316,36 @@ void Assembler::CheckOperandsAndLabels() {
     }
 }
 
+
+/*
+NAME:
+
+    HandleORGOperation() - Handles ORG operations
+
+SYNOPSIS:
+
+    Assembler::HandleORGOperation(int &a_loc);
+    a_loc      --> location variable to keep track of the location in the source code
+
+DESCRIPTION:
+
+    This function handles the ORG (origin) operation in the assembly language.
+    It checks for errors if a label is present with the ORG operation and updates the location counter accordingly.
+
+RETURN:
+
+    void, so returns nothing
+
+AUTHOR:
+
+    Ritika Dawadi
+
+DATE:
+
+    4:00pm 5/14/24
+
+*/
+
 void Assembler::HandleORGOperation(int& a_loc) {
     if (!m_inst.GetLabel().empty()) {
         Errors::RecordError("Error! Label found in ORG!");
@@ -254,9 +354,71 @@ void Assembler::HandleORGOperation(int& a_loc) {
     cout << a_loc << "\t\t\t\t" << m_inst.GetInstruction() << endl;
 }
 
+
+/*
+NAME:
+
+    HandleDSOperation() - Handles DS operations
+
+SYNOPSIS:
+
+    Assembler::HandleDSOperation(int &a_loc);
+    a_loc      --> location variable to keep track of the location in the source code
+
+DESCRIPTION:
+
+    This function handles the DS (Define Storage) operation in the assembly language.
+    It outputs the current location and the original instruction statement to the console.
+
+RETURN:
+
+    void, so returns nothing
+
+AUTHOR:
+
+    Ritika Dawadi
+
+DATE:
+
+    4:00pm 5/14/24
+
+*/
+
 void Assembler::HandleDSOperation(int& a_loc) {
     cout << a_loc << "\t\t\t\t" << m_inst.GetInstruction() << endl;
 }
+
+
+/*
+NAME:
+
+    HandleDCOperation() - Handles DC operations
+
+SYNOPSIS:
+
+    Assembler::HandleDCOperation(int &a_loc, string &a_content);
+    a_loc      --> location variable to keep track of the location in the source code
+    a_content  --> string variable to store the content to be inserted into memory
+
+DESCRIPTION:
+
+    This function handles the DC (Define Constant) operation in the assembly language.
+    It formats the operand, inserts it into memory, and outputs the current location, content,
+    and the original instruction statement to the console.
+
+RETURN:
+
+    void, so returns nothing
+
+AUTHOR:
+
+    Ritika Dawadi
+
+DATE:
+
+    4:00pm 5/14/24
+
+*/
 
 void Assembler::HandleDCOperation(int& a_loc, string& a_content) {
     a_content = m_inst.GetOperand1();
@@ -267,9 +429,72 @@ void Assembler::HandleDCOperation(int& a_loc, string& a_content) {
     cout << a_loc << "\t\t\t" << a_content << "\t\t" << m_inst.GetInstruction() << endl;
 }
 
+
+/*
+NAME:
+
+    InsertIntoMemory() - Inserts content into memory
+
+SYNOPSIS:
+
+    Assembler::InsertIntoMemory(int &a_loc, const string &a_content);
+    a_loc      --> location variable to keep track of the location in the source code
+    a_content  --> constant string reference to store the content to be inserted into memory
+
+DESCRIPTION:
+
+    This function inserts the provided content into the memory at the specified location
+    using the emulator's memory insertion function.
+
+RETURN:
+
+    void, so returns nothing
+
+AUTHOR:
+
+    Ritika Dawadi
+
+DATE:
+
+    4:00pm 5/14/24
+
+*/
+
 void Assembler::InsertIntoMemory(int& a_loc, const string& a_content) {
     m_emul.insertMemory(a_loc, stoll(a_content));
 }
+
+
+/*
+NAME:
+
+    ProcessInstruction() - Processes instructions for ORG, DS, and DC operations
+
+SYNOPSIS:
+
+    Assembler::ProcessInstruction(int &a_loc, string &a_content);
+    a_loc      --> location variable to keep track of the location in the source code
+    a_content  --> string variable to store the content to be inserted into memory
+
+DESCRIPTION:
+
+    This function processes instructions for ORG, DS, and DC operations. It calls
+    the appropriate handler functions for each operation and updates the location counter
+    accordingly.
+
+RETURN:
+
+    void, so returns nothing
+
+AUTHOR:
+
+    Ritika Dawadi
+
+DATE:
+
+    4:00pm 5/14/24
+
+*/
 
 void Assembler::ProcessInstruction(int& a_loc, string& a_content) {
     if (m_inst.GetOpCode() == "ORG") {
@@ -284,6 +509,37 @@ void Assembler::ProcessInstruction(int& a_loc, string& a_content) {
     a_loc = m_inst.LocationNextInstruction(a_loc);
 }
 
+
+/*
+NAME:
+
+    AssemblyInstruction() - Handles assembly instructions
+
+SYNOPSIS:
+
+    Assembler::AssemblyInstruction(string &a_content, int &a_loc);
+    a_content  --> string variable to store the content to be inserted into memory
+    a_loc      --> location variable to keep track of the location in the source code
+
+DESCRIPTION:
+
+    This function handles assembly instructions by checking for operand and label errors,
+    processing the instruction, and updating the location counter accordingly.
+
+RETURN:
+
+    void, so returns nothing
+
+AUTHOR:
+
+    Ritika Dawadi
+
+DATE:
+
+    4:00pm 5/14/24
+
+*/
+
 void Assembler::AssemblyInstruction(string& a_content, int& a_loc) {
     CheckOperandsAndLabels();
 
@@ -291,11 +547,69 @@ void Assembler::AssemblyInstruction(string& a_content, int& a_loc) {
 }
 
 
+/*
+NAME:
+
+    FormatOpCode() - Formats opcode to ensure it is 2 characters long
+
+SYNOPSIS:
+
+    Assembler::FormatOpCode(string &OpCode);
+    OpCode     --> reference to the string representing the opcode to be formatted
+
+DESCRIPTION:
+
+    This function formats the opcode to ensure it is 2 characters long by
+    prepending a '0' if necessary.
+
+RETURN:
+
+    void, so returns nothing
+
+AUTHOR:
+
+    Ritika Dawadi
+
+DATE:
+
+    4:00pm 5/14/24
+
+*/
+
 void Assembler::FormatOpCode(string& OpCode) {
     if (OpCode.size() != 2) {
         OpCode = "0" + OpCode;
     }
 }
+
+
+/*
+NAME:
+
+    CheckForHALTOperation() - Checks for errors in HALT operation
+
+SYNOPSIS:
+
+    Assembler::CheckForHALTOperation();
+
+DESCRIPTION:
+
+    This function checks for errors in the HALT operation, ensuring that no operands
+    or labels are present.
+
+RETURN:
+
+    void, so returns nothing
+
+AUTHOR:
+
+    Ritika Dawadi
+
+DATE:
+
+    4:00pm 5/14/24
+
+*/
 
 void Assembler::CheckForHALTOperation() {
     if (m_inst.GetOpCode() == "HALT") {
@@ -310,6 +624,34 @@ void Assembler::CheckForHALTOperation() {
     }
 }
 
+/*
+NAME:
+
+    CheckForLabelErrors() - Checks for errors related to labels
+
+SYNOPSIS:
+
+    Assembler::CheckForLabelErrors();
+
+DESCRIPTION:
+
+    This function checks for errors related to labels, such as labels defined in
+    multiple locations.
+
+RETURN:
+
+    void, so returns nothing
+
+AUTHOR:
+
+    Ritika Dawadi
+
+DATE:
+
+    4:00pm 5/14/24
+
+*/
+
 void Assembler::CheckForLabelErrors() {
     if (!m_inst.GetLabel().empty()) {
         int temp;
@@ -320,6 +662,38 @@ void Assembler::CheckForLabelErrors() {
         }
     }
 }
+
+
+/*
+NAME:
+
+    CheckOperandPresenceAndType() - Checks presence and type of operands
+
+SYNOPSIS:
+
+    Assembler::CheckOperandPresenceAndType(string &a_content, int &location, string &locate);
+    a_content  --> string variable to store the content to be inserted into memory
+    location   --> reference to the integer variable to keep track of the location
+    locate     --> reference to the string variable to store the formatted location
+
+DESCRIPTION:
+
+    This function checks the presence and type of operands, ensuring that registers
+    and operands are correctly specified and within valid ranges.
+
+RETURN:
+
+    void, so returns nothing
+
+AUTHOR:
+
+    Ritika Dawadi
+
+DATE:
+
+    4:00pm 5/14/24
+
+*/
 
 void Assembler::CheckOperandPresenceAndType(string& a_content, int& location, string& locate) {
     if (!m_inst.IsNumericOperand1()) {
@@ -343,6 +717,39 @@ void Assembler::CheckOperandPresenceAndType(string& a_content, int& location, st
         }
     }
 }
+
+/*
+NAME:
+
+    HandleNumericOperand1() - Handles instructions with numeric operand 1
+
+SYNOPSIS:
+
+    Assembler::HandleNumericOperand1(string &a_content, int &location, string &locate, const string &OpCode);
+    a_content  --> string variable to store the content to be inserted into memory
+    location   --> reference to the integer variable to keep track of the location
+    locate     --> reference to the string variable to store the formatted location
+    OpCode     --> constant string reference representing the opcode to be formatted
+
+DESCRIPTION:
+
+    This function handles instructions with a numeric operand 1, ensuring that the
+    operand is correctly formatted and within valid ranges. It processes different types
+    of instructions based on the opcode.
+
+RETURN:
+
+    void, so returns nothing
+
+AUTHOR:
+
+    Ritika Dawadi
+
+DATE:
+
+    4:00pm 5/14/24
+
+*/
 
 void Assembler::HandleNumericOperand1(string& a_content, int& location, string& locate, const string& OpCode) {
     if (m_inst.GetNumOpCode() >= 7 && m_inst.GetNumOpCode() <= 10) {
@@ -376,6 +783,39 @@ void Assembler::HandleNumericOperand1(string& a_content, int& location, string& 
     }
 }
 
+/*
+NAME:
+
+    HandleSymbolicOperand1() - Handles instructions with symbolic operand 1
+
+SYNOPSIS:
+
+    Assembler::HandleSymbolicOperand1(string &a_content, int &location, string &locate, const string &OpCode);
+    a_content  --> string variable to store the content to be inserted into memory
+    location   --> reference to the integer variable to keep track of the location
+    locate     --> reference to the string variable to store the formatted location
+    OpCode     --> constant string reference representing the opcode to be formatted
+
+DESCRIPTION:
+
+    This function handles instructions with a symbolic operand 1, ensuring that the
+    operand is correctly formatted and within valid ranges. It processes the instruction
+    based on the symbolic operand.
+
+RETURN:
+
+    void, so returns nothing
+
+AUTHOR:
+
+    Ritika Dawadi
+
+DATE:
+
+    4:00pm 5/14/24
+
+*/
+
 void Assembler::HandleSymbolicOperand1(string& a_content, int& location, string& locate, const string& OpCode) {
     a_content = OpCode + "9";
     if (!m_inst.GetOperand1().empty()) {
@@ -391,6 +831,37 @@ void Assembler::HandleSymbolicOperand1(string& a_content, int& location, string&
     }
     a_content = a_content + locate;
 }
+
+/*
+NAME:
+
+    ProcessMachineInstruction() - Processes machine instructions
+
+SYNOPSIS:
+
+    Assembler::ProcessMachineInstruction(string &a_content, int &a_loc);
+    a_content  --> string variable to store the content to be inserted into memory
+    a_loc      --> location variable to keep track of the location in the source code
+
+DESCRIPTION:
+
+    This function processes machine instructions by formatting the opcode,
+    checking for errors in operands and labels, handling numeric and symbolic operands,
+    and inserting the content into memory. It updates the location counter accordingly.
+
+RETURN:
+
+    void, so returns nothing
+
+AUTHOR:
+
+    Ritika Dawadi
+
+DATE:
+
+    4:00pm 5/14/24
+
+*/
 
 void Assembler::ProcessMachineInstruction(string& a_content, int& a_loc) {
     string OpCode = to_string(m_inst.GetNumOpCode());
@@ -415,13 +886,74 @@ void Assembler::ProcessMachineInstruction(string& a_content, int& a_loc) {
     a_loc = m_inst.LocationNextInstruction(a_loc);
 }
 
+/*
+NAME:
+
+    MachineInstruction() - Handles machine instructions
+
+SYNOPSIS:
+
+    Assembler::MachineInstruction(string &a_content, int &a_loc);
+    a_content  --> string variable to store the content to be inserted into memory
+    a_loc      --> location variable to keep track of the location in the source code
+
+DESCRIPTION:
+
+    This function handles machine instructions by processing the instruction,
+    formatting the opcode, checking for errors, and inserting the content into memory.
+    It updates the location counter accordingly.
+
+RETURN:
+
+    void, so returns nothing
+
+AUTHOR:
+
+    Ritika Dawadi
+
+DATE:
+
+    4:00pm 5/14/24
+
+*/
+
 void Assembler::MachineInstruction(string& a_content, int& a_loc) {
     ProcessMachineInstruction(a_content, a_loc);
 }
 
 
+
+/*
+NAME:
+
+    RunProgramInEmulator() - Runs the program in the emulator
+
+SYNOPSIS:
+
+    Assembler::RunProgramInEmulator();
+
+DESCRIPTION:
+
+    This function runs the assembled program in the emulator, displaying the results.
+    It first checks if there are no errors reported, then runs the emulator. If there are errors,
+    it outputs a message indicating that the emulator cannot run due to errors.
+
+RETURN:
+
+    void, so returns nothing
+
+AUTHOR:
+
+    Ritika Dawadi
+
+DATE:
+
+    4:00pm 5/14/24
+
+*/
+
 void Assembler::RunProgramInEmulator() {
-    cout << "----------------------------------------------" << endl;
+    std::cout << std::setw(70) << std::setfill('-') << "" << std::endl;
     cout << "Press Enter to continue..." << endl;
     cin.ignore();
     cout << "Results from Emulating Program:" << endl;
@@ -434,6 +966,7 @@ void Assembler::RunProgramInEmulator() {
     else {
         cout << "Emulator cannot run because of Errors!" << endl;
     }
+    cout << endl;
     cout << "End of Emulation" << endl;
+    std::cout << std::setw(70) << std::setfill('-') << "" << std::endl;
 }
-/*void Assembler::RunProgramInEmulator()*/

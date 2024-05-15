@@ -11,8 +11,7 @@ public:
     Instruction() {};
     ~Instruction() { };
 
-    // Codes to indicate the type of instruction we are processing.  Why is this inside the
-    // class?  We should make this an enum class.  We will do this during a lecture.
+    // enum class to store the different types of Instructions 
     enum class InstructionType {
         ST_MachineLanguage, 	// A machine language instruction.
         ST_AssemblerInstr,      // Assembler Language instruction.
@@ -28,39 +27,49 @@ public:
 
     //getter functions
 
+    // to access the label
     inline string& GetLabel() {
 
         return m_Label;
     };
     
+    // to determine if the label is blank 
     inline bool isLabel() {
 
         return !m_Label.empty();
     };
 
+    // to access the instruction 
     inline string& GetInstruction() {
         return m_instruction;
     };
 
+    // to access the operand 1
     inline string& GetOperand1() {
         return m_Operand1;
     };
 
+    // to access the operand 2
     inline string& GetOperand2() {
         return m_Operand2;
     };
 
+    // to access the OpCode
     inline string& GetOpCode() {
         return m_OpCode;
     };
 
+    // to access the numeric value of operand 1
     inline bool IsNumericOperand1() {
         return m_IsNumericOperand1;
     };
 
+    // to access the numeric value of operand 2 
     inline bool IsNumericOperand2() {
         return m_IsNumericOperand2;
     };
+
+    // to access the numeric value of the opCode 
     inline int GetNumOpCode() {
         return m_NumOpCode;
     };
@@ -72,8 +81,6 @@ private:
     string m_OpCode;       // The symbolic op code.
     string m_Operand1;     // The first operand. 
     string m_Operand2;     // The second operand.
-
-
     string m_instruction;    // The original instruction.
 
     // Derived values.
@@ -81,13 +88,12 @@ private:
     InstructionType m_type = InstructionType::ST_Error; // The type of instruction.
 
     bool m_IsNumericOperand1 = false;// == true if the operand 1 is numeric.
-    int m_Operand1NumericValue = 0;   // The value of the operand 1 if it is numeric.
-
+    int m_Operand1NumericValue = 0;   // The value of the operand 1 if it is numeric.                    
     bool m_IsNumericOperand2 = false;// == true if the operand 2 is numeric.
     int m_Operand2NumericValue = 0;   // The value of the operand 2 if it is numeric.
     
     // Deletes Comments
-    void DeleteComment(string& a_line);
+    void RemoveComment(string& a_line);
 
     // Record the fields of the instructions.
     bool RecordFields(const string& a_line);

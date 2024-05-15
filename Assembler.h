@@ -14,7 +14,7 @@ class Assembler {
 
 public:
     Assembler( int argc, char *argv[] );
-    ~Assembler( );
+   // ~Assembler( );
 
     // Pass I - establish the locations of the symbols
     void PassI( );

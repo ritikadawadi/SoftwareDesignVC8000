@@ -26,15 +26,23 @@ DESCRIPTION:
 RETURN:
 
     Returns the instruction type
+
+AUTHOR:
+
+    Ritika Dawadi 
+
+DATE:
+
+    4:00pm 5/14/24
 */
-// parse an instruction and return its type. 
+
 Instruction::InstructionType Instruction::ParseInstruction(string a_line)
 {
     // Record the original statement.  This will be needed in the sceond pass.
     m_instruction = a_line;
 
     // Delete any comment from the line.
-    DeleteComment(a_line);
+    RemoveComment(a_line);
 
     // Record label, opcode, and operands.  Up to you to deal with formatting errors.
     bool isFormatError = RecordFields(a_line);
@@ -47,7 +55,7 @@ Instruction::InstructionType Instruction::ParseInstruction(string a_line)
     // Return the instruction type.  This has to be handled in the code.
     return m_type;
 }
-/*Instruction::InstructionType Instruction::ParseInstruction(string a_line)*/
+
 
 /*
 NAME:
@@ -90,21 +98,29 @@ ASSEMBLER OPCODES:
 
 DESCRIPTION:
 
-        This function calls several other functions of the Instruction class. Initially, it calls the
-        ParseLineIntoFields function. The function assigns the a_line into it's respective elements.
-        Subsequently, it checks for any comments and operands in the a_line string.
-        The function calls isStrNumber on operand 1 and operand 2, and if it
-        returns true it uses stoi() function from standard library. stoi() converts a
-        string represting an integer to an integer type. All the character of the function are converted
-        to uppercase. Two arrays of machine language opcode and assembler instruction is initialized.
-        The fucntion checks if m_OpCode is any of the above by comparing it with the elements of the arrays.
-        it assigns m_type into the respective type from the enum class.
+    This function calls several other functions of the Instruction class. Initially, it calls the
+    ParseLineIntoFields function. The function assigns the a_line into it's respective elements.
+    Subsequently, it checks for any comments and operands in the a_line string.
+    The function calls isStrNumber on operand 1 and operand 2, and if it
+    returns true it uses stoi() function from standard library. stoi() converts a
+    string represting an integer to an integer type. All the character of the function are converted
+    to uppercase. Two arrays of machine language opcode and assembler instruction is initialized.
+    The fucntion checks if m_OpCode is any of the above by comparing it with the elements of the arrays.
+    it assigns m_type into the respective type from the enum class.
 
 RETURNS:
+
     bool true if sucessfully records the fields, false if there is format error
 
+AUTHOR:
+
+    Ritika Dawadi
+
+DATE:
+
+    4:00pm 5/14/24
+
 */
-// Record the fields that make up the instructions.
 
 bool Instruction::RecordFields(const string& a_line)
 {
@@ -170,7 +186,7 @@ bool Instruction::RecordFields(const string& a_line)
     m_type = InstructionType::ST_Error;
     return true;
 }
-/*bool Instruction::RecordFields( const string &a_line )*/
+
 
 /*
 NAME:
@@ -201,9 +217,14 @@ RETURNS:
 
     bool true if sucessfully parses the instruction into fields, false if there were additional characters
 
-*/
+AUTHOR:
 
-/**/
+    Ritika Dawadi
+
+DATE:
+
+    4:00pm 5/14/24
+*/
 
 bool Instruction::ParseLineIntoFields(string a_line, string& a_label, string& a_OpCode,
     string& a_Operand1, string& a_Operand2)
@@ -227,8 +248,7 @@ bool Instruction::ParseLineIntoFields(string a_line, string& a_label, string& a_
     // If there is extra data, return false.
     return endStr.empty() ? true : false;
 }
-/*bool Instruction::ParseLineIntoFields(string a_line, string& a_label, string& a_OpCode,
-    string& a_Operand1, string& a_Operand2)*/
+
 
 /*
 NAME:
@@ -255,8 +275,14 @@ RETURNS:
 
     bool true if the string is all numbers, otherwise returns false
 
-*/
+AUTHOR:
 
+    Ritika Dawadi
+
+DATE:
+
+    4:00pm 5/14/24
+*/
 
 bool Instruction::isStrNumber(const string& a_str)
 {
@@ -276,9 +302,7 @@ bool Instruction::isStrNumber(const string& a_str)
     }
     return true;
 }
-/*bool Instruction::isStrNumber(const string& a_str)*/
 
-/*
 
 /*
   NAME:
@@ -305,10 +329,17 @@ RETURNS:
     
     void, so returns nothing
 
-  */
-  // Delete any comments from the statement.
+AUTHOR:
 
-void Instruction::DeleteComment(string& a_line)
+    Ritika Dawadi
+
+DATE:
+
+    4:00pm 5/14/24
+
+  */
+ 
+void Instruction::RemoveComment(string& a_line)
 {
     size_t isemi1 = a_line.find(';');
     if (isemi1 != string::npos)
@@ -338,6 +369,14 @@ DESCRIPTION:
 RETURNS:
    
    int, so returns the location of the next instruction 
+
+AUTHOR:
+
+    Ritika Dawadi
+
+DATE:
+
+    4:00pm 5/14/24
 */
 
 int Instruction::LocationNextInstruction(int a_loc) {

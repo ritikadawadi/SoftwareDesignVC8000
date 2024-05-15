@@ -4,6 +4,7 @@
 #include "stdafx.h"
 #include "FileAccess.h"
 
+
 /*
 
 NAME:
@@ -26,6 +27,18 @@ DESCRIPTION:
     , and so on hold a additional arguments when running the program. The constructor checks if correct number 
     of arguments are provided, and displays message accordingly. 
     "m_sfile()" is used to read data from a file
+
+RETURNS:
+
+    construction class
+
+AUTHOR:
+
+    Ritika Dawadi
+
+DATE:
+
+    4:00pm 5/14/24
 
 
 */
@@ -57,6 +70,17 @@ SYNOPSIS:
 
     Releases the resources when an object of FileAccess class goes out of scople using the close() function.
 
+RETURNS:
+
+    destructor class
+
+AUTHOR:
+
+    Ritika Dawadi
+
+DATE:
+
+    4:00pm 5/14/24
 */
 
 
@@ -83,6 +107,17 @@ DESCRIPTION:
    "eof()" represents end of file, is there is no more data, then the function returns false, else it will read
    a file from the file and return true. The function uses getline to read from the file. 
    
+RETURNS:
+
+    boolean, so returns false is end of the line is met else returns true
+
+AUTHOR:
+
+    Ritika Dawadi
+
+DATE:
+
+    4:00pm 5/14/24
 */
 
 
@@ -113,9 +148,22 @@ SYNOPSIS:
     void function that does not return anything.
 
 DESCRIPTION:
+
     The function clears any error flags set on the file stream using .clear(). ios::beg indicates the beginning of the 
     file. When ios::beg is used along with seekg() on file stream, it tells the stream to the beginning 
     of the file. 0 offsets the reference point. 
+
+RETURNS:
+
+    void, so returns nothing 
+
+AUTHOR:
+
+    Ritika Dawadi
+
+DATE:
+
+    4:00pm 5/14/24
     
 */
 

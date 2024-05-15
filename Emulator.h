@@ -20,8 +20,6 @@ public:
     // Runs the program recorded in memory.
     bool runProgram();
 
-    function<int()> inputReader;
-
 private:
     
     vector<long long> m_memory;  	// Memory for the VC8000
